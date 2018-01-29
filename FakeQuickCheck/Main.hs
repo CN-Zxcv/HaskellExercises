@@ -45,12 +45,14 @@ newtype Gen a = Gen {
 -- 对于不同类型，需要自定义随机生成器
 class Arbitrary a where
     arbitrary :: Gen a
+    shrink :: Shrinker a
+    shrink = const []
 
 instance Arbitrary Int where
     arbitrary = Gen $ \rand -> fst (next rand)
 
-instance Arbitrary Integer where
-    arbitrary = Gen $ \rand -> fromIntegral (fst (next rand))
+--instance Arbitrary Integer where
+--    arbitrary = Gen $ \rand -> fromIntegral (fst (next rand))
 
 instance Arbitrary Bool where
     arbitrary = Gen $ \rand -> even (fst (next rand))
@@ -94,18 +96,18 @@ instance Testable Bool where
             else Failure {seed = 0, counterExample = []}
 
 -- 一元函数
-instance (Show a, Arbitrary a, Testable testable) => Testable (a -> testable) where
-    property f = forAll arbitrary f
+--instance (Show a, Arbitrary a, Testable testable) => Testable (a -> testable) where
+--    property f = forAll arbitrary f
 
 -- forAll 递归对prop应用generator直到返回一个Normal Form
-forAll :: (Show a, Testable testable) => Gen a -> (a -> testable) -> Property
-forAll argGen prop = Property $ Gen $ \rand ->
-    let (rand1, rand2) = split rand
-        arg = runGen argGen rand1
-        subProp = property (prop arg)
-        result = runProp subProp rand2
-    in overFailure result $ \failure ->
-            failure {counterExample = show arg : counterExample failure}
+--forAll :: (Show a, Testable testable) => Gen a -> (a -> testable) -> Property
+--forAll argGen prop = Property $ Gen $ \rand ->
+--    let (rand1, rand2) = split rand
+--        arg = runGen argGen rand1
+--        subProp = property (prop arg)
+--        result = runProp subProp rand2
+--    in overFailure result $ \failure ->
+--            failure {counterExample = show arg : counterExample failure}
 
 fakeQuickCheckImpl :: Testable prop => Int -> Int -> prop -> Result
 fakeQuickCheckImpl attemptNb startSeed prop = runAll (property prop)
@@ -123,11 +125,11 @@ fakeQuickCheckWith attemptNb prop = do
     seed <- randomIO
     return $ fakeQuickCheckImpl attemptNb seed prop
 
--- prop_gcd :: Integer -> Integer -> Bool
--- prop_gcd a b = a * b == gcd a b * lcm a b
---
--- prop_gcd_bad :: Integer -> Integer -> Bool
--- prop_gcd_bad a b = gcd a b > 1
+prop_gcd :: Integer -> Integer -> Bool
+prop_gcd a b = a * b == gcd a b * lcm a b
+
+prop_gcd_bad :: Integer -> Integer -> Bool
+prop_gcd_bad a b = gcd a b > 1
 
 -- fakeQuickCheck prop_gcd
 --  = Success
@@ -184,3 +186,66 @@ prop_distributive a b f = f (a + b) == f a + f b
 
 --fakeQuickCheck prop_distributive
 --    = Failure {seed = xxx, counterExample = [xx,xx,"<function>"]}
+
+-- 最小化错误值
+-- 将错误输入的值缩减到最小，排除干扰是很有用的
+-- 缩减方式也是根据类型可能采用不同的算法，
+-- 所以我们为 Arbitrary 添加shrink 接口
+type Shrinker a = a -> [a]
+
+-- 通常来说，缩减方式一般为将值的子集构建成一颗树，
+-- 然后在树上找到可以满足条件的子节点，
+-- 直到不能继续往下构建子集为止
+instance Arbitrary Integer where
+    arbitrary = Gen $ \rand -> fromIntegral (fst (next rand))
+    shrink n
+        | n == 0 = []
+        | otherwise = [abs n | n < 0] ++ 0 : rightDichotomy where
+            rightDichotomy = takeWhile (\m -> abs m < abs n)
+                [n - i | i <- tail (iterate (`quot` 2) n)]
+
+-- 为了让shrink工作，我们需要将shrink加入到Testable中
+instance (Show a, Arbitrary a, Testable testable) => Testable (a -> testable)
+    where
+        property = forAll arbitrary shrink
+
+-- forAll 递归中加入shrink处理
+forAll :: (Show a, Testable testable) => Gen a -> Shrinker a -> (a -> testable) -> Property
+forAll argGen shrink prop = Property $ Gen $ \rand ->
+    let (rand1, rand2) = split rand
+        arg = runGen argGen rand1
+        runSub = evalSubProp prop rand2
+        --result = runSub $ debug "forAll.arg=" arg
+        result = runSub arg
+    in overFailure result $ \failure ->
+        shrinking shrink arg runSub
+        <> addToCounterExample arg failure
+
+shrinking :: (Show a) => Shrinker a -> a -> (a -> Result) -> Result
+shrinking shrink arg runSub =
+    let children = debug "shrinking.children=" $ shrink arg
+        result = findFailing children runSub
+    in case result of
+        Nothing -> Success
+        Just (shrunk, failure) ->
+            shrinking shrink shrunk runSub
+            <> addToCounterExample shrunk failure
+
+findFailing :: [a] -> (a -> Result) -> Maybe (a, Result)
+findFailing smaller runSub =
+    let results = map runSub smaller
+    in find (isFailure . snd) (zip smaller results)
+
+evalSubProp :: Testable t => (a -> t) -> StdGen -> a -> Result
+evalSubProp prop rand = (`runProp` rand) . property . prop
+
+addToCounterExample :: (Show a) => a -> Result -> Result
+addToCounterExample arg b = overFailure b $ \failure ->
+    failure {counterExample = show arg : counterExample failure}
+
+isFailure :: Result -> Bool
+isFailure Success = False
+isFailure _ = True
+
+debug :: (Show a) => String -> a -> a
+debug s a = trace (s ++ show a) a
