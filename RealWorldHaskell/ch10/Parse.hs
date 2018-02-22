@@ -1,9 +1,12 @@
 
+module Parse where
+
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Lazy as L
 import Data.Int (Int64)
 import Data.Word (Word8)
 import Data.Char (chr, isDigit, isSpace)
+import Control.Applicative ((<$>))
 
 import PNM
 
