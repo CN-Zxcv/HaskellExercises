@@ -146,7 +146,8 @@ parseRawPPM =
     assert (maxValue == 255) "max value out of spec" ==>&
     parseByte ==>&
     parseTimes (width * height) parseRGB ==> \pxs ->
-    identity (listArray ((0,0),(width-1,height-1)) pxs)
+    --identity (listArray ((0,0),(width-1,height-1)) pxs)
+    identity (listArray ((0,0),(height-1,width-1)) pxs)
 
 parseRGB :: Parse RGB
 parseRGB = parseByte ==> \r ->
@@ -160,14 +161,15 @@ parseTimes n p = p ==> \x -> (x:) <$> parseTimes (n-1) p
 
 {-
 将彩色图片转换为灰度图,
-转换的公式由 ITU-R Recommendation 601 建议
 -}
 luminance :: (Pixel, Pixel, Pixel) -> Pixel
-luminance (r,g,b) = round (r' * 0.30 + g' * 0.59 + b' * 0.11)
+--luminance (r,g,b) = round (r' * 0.30 + g' * 0.59 + b' * 0.11)
+luminance (r,g,b) = round (r' * 0.1 + g' * 0.45 + b' * 0.45)
     where
         r' = fromIntegral r
         g' = fromIntegral g
         b' = fromIntegral b
+
 
 type Greymap = Array (Int,Int) Pixel
 
@@ -287,3 +289,113 @@ candidateDigits rle
         runLengths = map fst rle
 
 input = zip (runLengths $ encodeEAN13 "978013211467") (cycle [Zero, One])
+
+{-
+因为可能性太多，我们先通过计算校验位来排除掉部分候选值
+-}
+
+-- 校验位和满足校验位的序列
+type Map a = M.Map Digit [a]
+
+type DigitMap = Map Digit
+type ParityMap = Map (Parity Digit)
+
+updateMap :: Parity Digit       -- ^ new digit
+          -> Digit              -- ^ existing key
+          -> [Parity Digit]     -- ^ existing digit sequence
+          -> ParityMap          -- ^ map to update
+          -> ParityMap
+updateMap digit key seq = insertMap key (fromParity digit) (digit:seq)
+
+insertMap :: Digit -> Digit -> [a] -> Map a -> Map a
+insertMap key digit val m = val `seq` M.insert key' val m
+    where key' = (key + digit) `mod` 10
+
+useDigit :: ParityMap -> ParityMap -> Parity Digit -> ParityMap
+useDigit old new digit =
+    --new `M.union` M.foldWithKey (updateMap digit) M.empty old
+    new `M.union` M.foldrWithKey (updateMap digit) M.empty old
+
+incorporateDigits :: ParityMap -> [Parity Digit] -> ParityMap
+incorporateDigits old digits = foldl' (useDigit old) M.empty digits
+
+finalDigits :: [[Parity Digit]] -> ParityMap
+finalDigits = foldl' incorporateDigits (M.singleton 0 [])
+            . mapEveryOther (map (fmap (*3)))
+
+firstDigit :: [Parity a] -> Digit
+firstDigit = snd . head . bestScores paritySRL . runLengths
+           . map parityBit . take 6
+    where
+        parityBit (Even _) = Zero
+        parityBit (Odd _) = One
+
+addFirstDigit :: ParityMap -> DigitMap
+--addFirstDigit = M.foldWithKey updateFirst M.empty
+addFirstDigit = M.foldrWithKey updateFirst M.empty
+
+updateFirst :: Digit -> [Parity Digit] -> DigitMap -> DigitMap
+updateFirst key seq = insertMap key digit (digit:renormalize qes)
+    where
+        renormalize = mapEveryOther (`div` 3) . map fromParity
+        digit = firstDigit qes
+        qes = reverse seq
+
+buildMap :: [[Parity Digit]] -> DigitMap
+buildMap = M.mapKeys (10 -) . addFirstDigit . finalDigits
+
+solve :: [[Parity Digit]] -> [[Digit]]
+solve [] = []
+solve xs = catMaybes $ map (addCheckDigit m) checkDigits
+    where
+        checkDigits = map fromParity (last xs)
+        m = buildMap (init xs)
+        addCheckDigit m k = (++[k]) <$> M.lookup k m
+
+withRow :: Int -> Pixmap -> (RunLength Bit -> a) -> a
+withRow n greymap f = f . runLength . elems $ posterized
+    where
+        posterized = threshold 0.4 . fmap luminance . row n $ greymap
+
+--row :: (Ix a, Ix b) => b -> Array (a,b) c -> Array a c
+--row j a = ixmap (l,u) project a
+--    where
+--        project i = (i,j)
+--        ((l,_), (u,_)) = bounds a
+
+row :: (Ix a, Ix b) => a -> Array (a, b) c -> Array b c
+row j a = ixmap (l, u) project a
+    where
+        project i = (j, i)
+        ((_, l), (_, u)) = bounds a
+
+findMatch :: [(Run, Bit)] -> Maybe [[Digit]]
+findMatch = listToMaybe
+          . filter (not . null)
+          . map (solve . candidateDigits)
+          . tails
+
+--findEAN13 :: Pixmap -> Maybe [Digit]
+--findEAN13 pixmap = withRow center pixmap (fmap head . findMatch)
+--    where
+--        (_, (maxX, _)) = bounds pixmap
+--        center = (maxX + 1) `div` 2
+
+findEAN13' :: Pixmap -> [(Run,[Digit])]
+findEAN13' pixmap = map rle . sortBy ((flip compare) `on` length) . group . sort $ searchRowAt maxX
+    where
+        (_, (maxX, _)) = bounds pixmap
+        searchRowAt 0 = []
+        searchRowAt n = case withRow n pixmap (fmap head . findMatch) of
+            Nothing -> searchRowAt (n-1)
+            Just x -> x : searchRowAt (n-1)
+        rle xs = (length xs, head xs)
+
+main :: IO ()
+main = do
+    args <- getArgs
+    forM_ args $ \arg -> do
+        e <- parse parseRawPPM <$> L.readFile arg
+        case e of
+            Left err ->     print $ "error: " ++ err
+            Right pixmap -> print $ findEAN13' pixmap
