@@ -1,6 +1,7 @@
 
 import System.Random
-import Control.Monad.State
+import Control.Monad
+import Control.Monad.Trans.State
 
 type SimpleState s a = s -> (a, s)
 
