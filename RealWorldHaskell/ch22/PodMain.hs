@@ -55,3 +55,8 @@ syntaxError = putStrLn
   \pod download     Downloads all pending episodes\n\
   \pod fetch        Updates, then downloads\n\
   \pod update       Downloads podcast feeds, looks for new episodes\n"
+
+
+{-
+ghc --make -O2 -o pod -package HTTP -package HaXml -package network -package HDBC -package HDBC-sqlite3 PodMain.hs
+-}
