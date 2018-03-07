@@ -1,0 +1,273 @@
+[1 of 1] Compiling Main             ( A.hs, A.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 160, types: 158, coercions: 14}
+
+Main.$WPair [InlPrag=INLINE]
+  :: forall a_alb b_alc. a_alb -> b_alc -> Main.Pair a_alb b_alc
+[GblId[DataConWrapper],
+ Arity=2,
+ Caf=NoCafRefs,
+ Str=DmdType SSm,
+ Unf=Unf{Src=InlineStable, TopLvl=True, Arity=2, Value=True,
+         ConLike=True, WorkFree=True, Expandable=True,
+         Guidance=ALWAYS_IF(unsat_ok=False,boring_ok=False)
+         Tmpl= \ (@ a_alb)
+                 (@ b_alc)
+                 (tpl_B1 [Occ=Once] :: a_alb)
+                 (tpl_B2 [Occ=Once] :: b_alc) ->
+                 case tpl_B1 of tpl_X6 { __DEFAULT ->
+                 case tpl_B2 of tpl_X8 { __DEFAULT ->
+                 Main.Pair @ a_alb @ b_alc tpl_X6 tpl_X8
+                 }
+                 }}]
+Main.$WPair =
+  \ (@ a_alb)
+    (@ b_alc)
+    (tpl_B1 [Occ=Once] :: a_alb)
+    (tpl_B2 [Occ=Once] :: b_alc) ->
+    case tpl_B1 of tpl_X6 { __DEFAULT ->
+    case tpl_B2 of tpl_X8 { __DEFAULT ->
+    Main.Pair @ a_alb @ b_alc tpl_X6 tpl_X8
+    }
+    }
+
+lvl_r2Ca :: [GHC.Types.Char]
+[GblId]
+lvl_r2Ca =
+  GHC.CString.unpackCString#
+    "Pattern match failure in do expression at A.hs:10:5-7"
+
+Main.$wa
+  :: forall b_a13s.
+     GHC.Prim.State# GHC.Prim.RealWorld
+     -> (# GHC.Prim.State# GHC.Prim.RealWorld, b_a13s #)
+[GblId, Arity=1, Str=DmdType Lb]
+Main.$wa =
+  \ (@ b_a13s) (w_s2zv :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+    ((GHC.IO.failIO @ b_a13s lvl_r2Ca)
+     `cast` (<GHC.Types.NTCo:IO <b_a13s>>
+             :: GHC.Types.IO b_a13s
+                  ~#
+                (GHC.Prim.State# GHC.Prim.RealWorld
+                 -> (# GHC.Prim.State# GHC.Prim.RealWorld, b_a13s #))))
+      w_s2zv
+
+lvl1_r2Cb :: GHC.Integer.Type.Integer
+[GblId, Str=DmdType]
+lvl1_r2Cb = __integer 1
+
+Main.main5 :: [GHC.Types.Char]
+[GblId,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=0, Value=False,
+         ConLike=False, WorkFree=False, Expandable=False,
+         Guidance=IF_ARGS [] 40 0}]
+Main.main5 = GHC.CString.unpackCString# "%f"
+
+Rec {
+Main.$wlgo [Occ=LoopBreaker]
+  :: GHC.Integer.Type.Integer
+     -> GHC.Types.Double
+     -> [GHC.Types.Double]
+     -> (# GHC.Integer.Type.Integer, GHC.Types.Double #)
+[GblId, Arity=3, Str=DmdType LLS]
+Main.$wlgo =
+  \ (ww_s2zB :: GHC.Integer.Type.Integer)
+    (ww1_s2zC :: GHC.Types.Double)
+    (w_s2zE :: [GHC.Types.Double]) ->
+    case w_s2zE of _ {
+      [] -> (# ww_s2zB, ww1_s2zC #);
+      : x_a1fP xs_a1fQ ->
+        case ww_s2zB of n_XnK { __DEFAULT ->
+        case ww1_s2zC of _ { GHC.Types.D# ipv_s1fW ->
+        Main.$wlgo
+          (GHC.Integer.Type.plusInteger n_XnK lvl1_r2Cb)
+          (case x_a1fP of _ { GHC.Types.D# y_a1oR ->
+           GHC.Types.D# (GHC.Prim.+## ipv_s1fW y_a1oR)
+           })
+          xs_a1fQ
+        }
+        }
+    }
+end Rec }
+
+Main.main4 :: GHC.Integer.Type.Integer
+[GblId,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=0, Value=True,
+         ConLike=True, WorkFree=True, Expandable=True,
+         Guidance=IF_ARGS [] 100 0}]
+Main.main4 = __integer 0
+
+Main.main3 :: GHC.Types.Double
+[GblId,
+ Caf=NoCafRefs,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=0, Value=True,
+         ConLike=True, WorkFree=False, Expandable=True,
+         Guidance=IF_ARGS [] 10 20}]
+Main.main3 = GHC.Types.D# 0.0
+
+Main.main2 :: GHC.Types.Double
+[GblId,
+ Caf=NoCafRefs,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=0, Value=True,
+         ConLike=True, WorkFree=False, Expandable=True,
+         Guidance=IF_ARGS [] 10 20}]
+Main.main2 = GHC.Types.D# 1.0
+
+Main.main8 :: GHC.Types.Double
+[GblId, Str=DmdType b]
+Main.main8 = GHC.Err.error @ GHC.Types.Double Text.Read.readEither4
+
+Main.main7 :: GHC.Types.Double
+[GblId, Str=DmdType b]
+Main.main7 = GHC.Err.error @ GHC.Types.Double Text.Read.readEither2
+
+Main.main9 :: Text.ParserCombinators.ReadP.P GHC.Types.Double
+[GblId,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=0, Value=False,
+         ConLike=False, WorkFree=False, Expandable=False,
+         Guidance=IF_ARGS [] 40 0}]
+Main.main9 =
+  GHC.Read.$fReadDouble13
+    GHC.Read.$fReadDouble_$sconvertFrac
+    Text.ParserCombinators.ReadPrec.minPrec
+    @ GHC.Types.Double
+    (Text.Read.readEither5 @ GHC.Types.Double)
+
+Main.main6 :: GHC.Base.String -> GHC.Types.Double
+[GblId,
+ Arity=1,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=1, Value=True,
+         ConLike=True, WorkFree=True, Expandable=True,
+         Guidance=IF_ARGS [0] 90 0}]
+Main.main6 =
+  \ (s_a1bw :: GHC.Base.String) ->
+    case Text.Read.readEither6
+           @ GHC.Types.Double
+           (Text.ParserCombinators.ReadP.run
+              @ GHC.Types.Double Main.main9 s_a1bw)
+    of _ {
+      [] -> Main.main8;
+      : x_a2vg ds_a2vh ->
+        case ds_a2vh of _ {
+          [] -> x_a2vg;
+          : ipv_a2vp ipv1_a2vq -> Main.main7
+        }
+    }
+
+Main.main1
+  :: forall b_a13s.
+     GHC.Prim.State# GHC.Prim.RealWorld
+     -> (# GHC.Prim.State# GHC.Prim.RealWorld, b_a13s #)
+[GblId,
+ Arity=1,
+ Str=DmdType L,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=1, Value=True,
+         ConLike=True, WorkFree=True, Expandable=True,
+         Guidance=IF_ARGS [0] 431 30}]
+Main.main1 =
+  \ (@ b_X13J) (eta_Xz :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+    case System.Environment.getArgs1 eta_Xz
+    of _ { (# ipv_a1ph, ipv1_a1pi #) ->
+    case GHC.Base.map
+           @ [GHC.Types.Char] @ GHC.Types.Double Main.main6 ipv1_a1pi
+    of _ {
+      [] -> Main.$wa @ b_X13J ipv_a1ph;
+      : d_anu ds1_d1aS ->
+        case ds1_d1aS of _ {
+          [] ->
+            case GHC.IO.Handle.Text.hPutStr2
+                   GHC.IO.Handle.FD.stdout
+                   (Text.Printf.uprintf
+                      Main.main5
+                      (GHC.List.reverse1
+                         @ Text.Printf.UPrintf
+                         (GHC.Types.:
+                            @ Text.Printf.UPrintf
+                            (Text.Printf.UDouble
+                               (case Main.$wlgo
+                                       Main.main4
+                                       Main.main3
+                                       (GHC.Real.numericEnumFromTo
+                                          @ GHC.Types.Double
+                                          GHC.Classes.$fOrdDouble
+                                          GHC.Float.$fFractionalDouble
+                                          Main.main2
+                                          d_anu)
+                                of _ { (# ww1_s2zL, ww2_s2zM #) ->
+                                case ww2_s2zM of _ { GHC.Types.D# x_a2bo ->
+                                case GHC.Integer.Type.doubleFromInteger ww1_s2zL
+                                of wild3_a2bz { __DEFAULT ->
+                                case GHC.Prim./## x_a2bo wild3_a2bz of wild4_a2bu { __DEFAULT ->
+                                GHC.Types.D# wild4_a2bu
+                                }
+                                }
+                                }
+                                }))
+                            (GHC.Types.[] @ Text.Printf.UPrintf))
+                         (GHC.Types.[] @ Text.Printf.UPrintf)))
+                   GHC.Types.False
+                   ipv_a1ph
+            of _ { (# ipv2_a1ow, _ #) ->
+            (# ipv2_a1ow, Text.Printf.$fPrintfTypeIO2 @ b_X13J #)
+            };
+          : ipv2_s1gg ipv3_s1gh -> Main.$wa @ b_X13J ipv_a1ph
+        }
+    }
+    }
+
+Main.main :: forall b_a13q. GHC.Types.IO b_a13q
+[GblId,
+ Arity=1,
+ Str=DmdType L,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=0, Value=True,
+         ConLike=True, WorkFree=True, Expandable=True,
+         Guidance=ALWAYS_IF(unsat_ok=True,boring_ok=True)}]
+Main.main =
+  Main.main1
+  `cast` (forall b_X13K. Sym <(GHC.Types.NTCo:IO <b_X13K>)>
+          :: (forall b_X13K.
+              GHC.Prim.State# GHC.Prim.RealWorld
+              -> (# GHC.Prim.State# GHC.Prim.RealWorld, b_X13K #))
+               ~#
+             (forall b_X13K. GHC.Types.IO b_X13K))
+
+Main.main10
+  :: GHC.Prim.State# GHC.Prim.RealWorld
+     -> (# GHC.Prim.State# GHC.Prim.RealWorld, GHC.Prim.Any * #)
+[GblId,
+ Arity=1,
+ Str=DmdType L,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=1, Value=True,
+         ConLike=True, WorkFree=True, Expandable=True,
+         Guidance=IF_ARGS [0] 30 0}]
+Main.main10 =
+  \ (eta_Xi :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+    GHC.TopHandler.runMainIO1
+      @ (GHC.Prim.Any *)
+      ((Main.main1 @ (GHC.Prim.Any *))
+       `cast` (Sym <(GHC.Types.NTCo:IO <GHC.Prim.Any *>)>
+               :: (GHC.Prim.State# GHC.Prim.RealWorld
+                   -> (# GHC.Prim.State# GHC.Prim.RealWorld, GHC.Prim.Any * #))
+                    ~#
+                  GHC.Types.IO (GHC.Prim.Any *)))
+      eta_Xi
+
+:Main.main :: GHC.Types.IO (GHC.Prim.Any *)
+[GblId,
+ Arity=1,
+ Str=DmdType L,
+ Unf=Unf{Src=<vanilla>, TopLvl=True, Arity=0, Value=True,
+         ConLike=True, WorkFree=True, Expandable=True,
+         Guidance=ALWAYS_IF(unsat_ok=True,boring_ok=True)}]
+:Main.main =
+  Main.main10
+  `cast` (Sym <(GHC.Types.NTCo:IO <GHC.Prim.Any *>)>
+          :: (GHC.Prim.State# GHC.Prim.RealWorld
+              -> (# GHC.Prim.State# GHC.Prim.RealWorld, GHC.Prim.Any * #))
+               ~#
+             GHC.Types.IO (GHC.Prim.Any *))
+
+
+
+Linking A ...

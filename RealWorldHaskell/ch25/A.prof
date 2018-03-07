@@ -1,0 +1,36 @@
+	Wed Mar  7 18:01 2018 Time and Allocation Profiling Report  (Final)
+
+	   A +RTS -i0.01 -p -hd -K200M -RTS 1e7
+
+	total time  =        1.02 secs   (1024 ticks @ 1000 us, 1 processor)
+	total alloc = 2,560,118,056 bytes  (excludes profiling overheads)
+
+COST CENTRE MODULE  %time %alloc
+
+main        Main     54.2   65.6
+mean.(...)  Main     22.9   21.9
+mean.k      Main     22.9   12.5
+
+
+                                                                   individual     inherited
+COST CENTRE   MODULE                             no.     entries  %time %alloc   %time %alloc
+
+MAIN          MAIN                                59           0    0.0    0.0   100.0  100.0
+ main         Main                               119           0   54.2   65.6   100.0  100.0
+  mean        Main                               121           1    0.0    0.0    45.8   34.4
+   mean.n     Main                               125           1    0.0    0.0     0.0    0.0
+   mean.(...) Main                               123           1   22.9   21.9    45.8   34.4
+    mean.k    Main                               124    10000000   22.9   12.5    22.9   12.5
+   mean.s     Main                               122           1    0.0    0.0     0.0    0.0
+ CAF:main1    Main                               116           0    0.0    0.0     0.0    0.0
+  main        Main                               118           1    0.0    0.0     0.0    0.0
+ CAF:main5    Main                               115           0    0.0    0.0     0.0    0.0
+  main        Main                               120           0    0.0    0.0     0.0    0.0
+ CAF:main11   Main                               112           0    0.0    0.0     0.0    0.0
+ CAF          GHC.Float                          105           0    0.0    0.0     0.0    0.0
+ CAF          GHC.IO.Encoding                    103           0    0.0    0.0     0.0    0.0
+ CAF          GHC.IO.Handle.FD                   101           0    0.0    0.0     0.0    0.0
+ CAF          Text.Read.Lex                       95           0    0.0    0.0     0.0    0.0
+ CAF          GHC.Conc.Signal                     94           0    0.0    0.0     0.0    0.0
+ CAF          GHC.IO.Encoding.Iconv               91           0    0.0    0.0     0.0    0.0
+ CAF          GHC.Integer.Logarithms.Internals    67           0    0.0    0.0     0.0    0.0
